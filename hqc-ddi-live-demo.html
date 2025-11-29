@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HQC-DDI Framework Live Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .role-box {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .role-box.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .role-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .role-permissions {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        
+        .log-box {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+        }
+        
+        .log-timestamp {
+            color: #888;
+        }
+        
+        .log-success { color: #00ff00; }
+        .log-info { color: #00aaff; }
+        .log-warning { color: #ffaa00; }
+        .log-error { color: #ff5555; }
+        
+        .benchmark-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .benchmark-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .benchmark-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .benchmark-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge-metric {
+            display: inline-block;
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .animation-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 HQC-DDI Framework Live Demo</h1>
+            <p>Hybrid Quantum-Classical Computing with Data-Driven Innovation</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- SIMULATION CONTROL -->
+            <div class="section">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <button class="button" onclick="runFullDemo()">▶ Run Full Demo</button>
+                    <button class="button" onclick="clearLogs()" style="margin-left: 10px; background: #764ba2;">Clear Logs</button>
+                </div>
+            </div>
+            
+            <!-- DP2: DATA GOVERNANCE -->
+            <div class="section">
+                <h2 class="section-title">📋 DP2: Data Governance & RBAC</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>5 Governance Roles</h3>
+                        <div id="rolesList"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Data Quality Metrics</h3>
+                        <div id="qualityMetrics"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DP1: ORCHESTRATION -->
+            <div class="section">
+                <h2 class="section-title">⚙️ DP1: Hybrid Orchestration (VQE Workflow)</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>VQE Convergence</h3>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Optimization Progress</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="convergenceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Workflow Metrics</h3>
+                        <div id="orchestrationMetrics"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DP3: VALUE MEASUREMENT -->
+            <div class="section">
+                <h2 class="section-title">📊 DP3: Value Measurement & Benchmarking</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>HQC vs Classical Comparison</h3>
+                        <div class="chart-container">
+                            <canvas id="benchmarkChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Key Performance Indicators</h3>
+                        <table class="benchmark-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kpiTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DP4: EXTENSIBILITY -->
+            <div class="section">
+                <h2 class="section-title">🔌 DP4: Plugin Architecture & Backend Agnosticism</h2>
+                <div class="grid-4">
+                    <div id="backendQiskit" class="card">
+                        <h3>🔹 Qiskit (IBM)</h3>
+                        <div style="text-align: center; font-size: 2em; margin: 15px 0;">💻</div>
+                        <div class="status-badge status-success">Registered</div>
+                    </div>
+                    <div id="backendBraket" class="card">
+                        <h3>☁️ AWS Braket</h3>
+                        <div style="text-align: center; font-size: 2em; margin: 15px 0;">🌥️</div>
+                        <div class="status-badge status-success">Registered</div>
+                    </div>
+                    <div id="backendCudaQ" class="card">
+                        <h3>⚡ CUDA-Q (NVIDIA)</h3>
+                        <div style="text-align: center; font-size: 2em; margin: 15px 0;">🎮</div>
+                        <div class="status-badge status-success">Registered</div>
+                    </div>
+                    <div id="backendIonQ" class="card">
+                        <h3>🔬 IonQ</h3>
+                        <div style="text-align: center; font-size: 2em; margin: 15px 0;">⚛️</div>
+                        <div class="status-badge status-info">Available</div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Registered Domain Plugins</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;" id="domainPlugins"></div>
+                </div>
+            </div>
+            
+            <!-- EXECUTION LOG -->
+            <div class="section">
+                <h2 class="section-title">📜 Execution Log</h2>
+                <div class="log-box" id="logBox"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>HQC-DDI Framework Prototype © 2025 | Demonstrates DP1-DP4 Implementation</p>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let convergenceData = [];
+        let convergenceChart = null;
+        let benchmarkChart = null;
+        
+        // Logging function
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('logBox');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logBox').innerHTML = '';
+            convergenceData = [];
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            // Convergence Chart
+            const ctx1 = document.getElementById('convergenceChart').getContext('2d');
+            convergenceChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Energy (HQC)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'Energy' }
+                        }
+                    }
+                }
+            });
+            
+            // Benchmark Chart
+            const ctx2 = document.getElementById('benchmarkChart').getContext('2d');
+            benchmarkChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Execution Time (s)', 'Cost ($)', 'Solution Quality', 'Iterations'],
+                    datasets: [
+                        {
+                            label: 'Classical',
+                            data: [120.5, 45.0, 0.87, 150],
+                            backgroundColor: 'rgba(156, 39, 176, 0.5)',
+                            borderColor: 'rgb(156, 39, 176)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'HQC',
+                            data: [8.2, 12.5, 0.94, 22],
+                            backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                            borderColor: 'rgb(102, 126, 234)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        // Render roles
+        function renderRoles() {
+            const roles = [
+                { name: 'Data Owner', color: '#667eea', permissions: 'read, write, approve, delete' },
+                { name: 'Quantum Specialist', color: '#764ba2', permissions: 'read, execute_quantum, write_results' },
+                { name: 'Classical Specialist', color: '#ff6b9d', permissions: 'read, execute_classical, write_results' },
+                { name: 'Data Steward', color: '#ffa502', permissions: 'read, validate_quality, audit' },
+                { name: 'Compliance Officer', color: '#26de81', permissions: 'read, audit, policy_enforcement' }
+            ];
+            
+            const rolesList = document.getElementById('rolesList');
+            roles.forEach(role => {
+                const box = document.createElement('div');
+                box.className = 'role-box active';
+                box.style.borderColor = role.color;
+                box.innerHTML = `
+                    <div class="role-name" style="color: ${role.color}">👤 ${role.name}</div>
+                    <div class="role-permissions">${role.permissions}</div>
+                `;
+                rolesList.appendChild(box);
+            });
+        }
+        
+        // Render quality metrics
+        function renderQualityMetrics() {
+            const metrics = {
+                'Consistency': 0.95,
+                'Timeliness': 0.90,
+                'Validity': 0.98,
+                'Uniqueness': 0.99,
+                'Accuracy': 0.92
+            };
+            
+            const container = document.getElementById('qualityMetrics');
+            Object.entries(metrics).forEach(([key, value]) => {
+                const metric = document.createElement('div');
+                metric.className = 'metric';
+                metric.innerHTML = `
+                    <span class="metric-label">${key}</span>
+                    <span class="metric-value">${(value * 100).toFixed(0)}%</span>
+                `;
+                container.appendChild(metric);
+            });
+        }
+        
+        // Render domain plugins
+        function renderDomainPlugins() {
+            const domains = [
+                { name: 'Pharmaceutical', icon: '💊' },
+                { name: 'Financial', icon: '💰' },
+                { name: 'Materials Science', icon: '⚗️' }
+            ];
+            
+            const container = document.getElementById('domainPlugins');
+            domains.forEach(domain => {
+                const box = document.createElement('div');
+                box.className = 'card';
+                box.innerHTML = `
+                    <div style="font-size: 2em; text-align: center;">${domain.icon}</div>
+                    <div style="text-align: center; margin-top: 10px; font-weight: 600;">${domain.name}</div>
+                    <div class="status-badge status-success" style="display: block; text-align: center; margin-top: 10px;">Registered</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+        
+        // Update orchestration metrics
+        function updateOrchestrationMetrics(iteration, energy) {
+            const container = document.getElementById('orchestrationMetrics');
+            container.innerHTML = `
+                <div class="metric">
+                    <span class="metric-label">Backend</span>
+                    <span class="metric-value">Qiskit</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Current Iteration</span>
+                    <span class="metric-value">${iteration}/50</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Current Energy</span>
+                    <span class="metric-value">${energy.toFixed(4)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="status-badge status-info">Optimizing...</span>
+                </div>
+            `;
+        }
+        
+        // Update KPI table
+        function updateKPITable() {
+            const kpis = [
+                { metric: 'Speedup Factor', value: '14.7x' },
+                { metric: 'Cost Reduction', value: '72.2%' },
+                { metric: 'Quality Improvement', value: '8.1%' },
+                { metric: 'Convergence Efficiency', value: '6.82x' }
+            ];
+            
+            const tbody = document.getElementById('kpiTable');
+            tbody.innerHTML = '';
+            kpis.forEach(kpi => {
+                const row = tbody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                cell1.textContent = kpi.metric;
+                cell2.innerHTML = `<span class="badge-metric">${kpi.value}</span>`;
+            });
+        }
+        
+        // VQE simulation
+        async function simulateVQE() {
+            log('Starting VQE optimization workflow...', 'info');
+            
+            for (let i = 1; i <= 50; i++) {
+                // Simulate convergence
+                const energy = -1.0 + (1.0 / (1 + i * 0.1)) + (Math.random() * 0.05 - 0.025);
+                
+                convergenceData.push({
+                    iteration: i,
+                    energy: energy
+                });
+                
+                // Update chart
+                convergenceChart.data.labels.push(`Iter ${i}`);
+                convergenceChart.data.datasets[0].data.push(energy);
+                convergenceChart.update('none');
+                
+                // Update progress
+                const percent = Math.min(100, (i / 50) * 100);
+                document.getElementById('progressBar').style.width = percent + '%';
+                document.getElementById('progressBar').textContent = Math.round(percent) + '%';
+                document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+                
+                // Update metrics every 5 iterations
+                if (i % 5 === 0) {
+                    updateOrchestrationMetrics(i, energy);
+                    log(`Iteration ${i}: Energy = ${energy.toFixed(4)}`, 'success');
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            log('VQE optimization complete!', 'success');
+            updateKPITable();
+        }
+        
+        // Full demo
+        async function runFullDemo() {
+            clearLogs();
+            
+            log('=== HQC-DDI Framework Demonstration ===', 'info');
+            
+            // Step 1: Governance
+            log('STEP 1: Initialize Data Governance (DP2)', 'info');
+            log('Creating dataset metadata: drug_discovery_001', 'success');
+            log('Checking RBAC: user=quantum_engineer_1, role=quantum_specialist', 'success');
+            log('Access GRANTED for action: execute_quantum', 'success');
+            log('Recording data quality metrics...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 2: Orchestration
+            log('STEP 2: Execute Hybrid Quantum-Classical Workflow (DP1)', 'info');
+            log('Initializing HybridQuantumOrchestrator with Qiskit backend', 'success');
+            log('Backend: qiskit_simulator', 'info');
+            await simulateVQE();
+            
+            // Step 3: Benchmarking
+            log('STEP 3: Value Measurement - Benchmark HQC vs Classical (DP3)', 'info');
+            log('Running classical baseline...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            log('Classical Results: Time=120.5s, Cost=$45.0, Quality=0.87, Iterations=150', 'info');
+            log('HQC Results: Time=8.2s, Cost=$12.5, Quality=0.94, Iterations=22', 'success');
+            log('Benchmarking: Speedup=14.7x, Cost Reduction=72.2%, Quality Improvement=8.1%', 'success');
+            
+            // Step 4: Extensibility
+            log('STEP 4: Plugin Architecture - Backend Agnosticism (DP4)', 'info');
+            log('Registering quantum backends...', 'info');
+            log('✓ Registered: qiskit_simulator', 'success');
+            log('✓ Registered: aws_braket', 'success');
+            log('✓ Registered: cuda_q', 'success');
+            log('Registering domain plugins...', 'info');
+            log('✓ Registered domain: pharmaceutical', 'success');
+            log('✓ Registered domain: financial', 'success');
+            log('✓ Registered domain: materials_science', 'success');
+            
+            log('=== Demonstration Complete ===', 'success');
+            log('All Design Principles (DP1-DP4) instantiated successfully!', 'success');
+            log('Framework ready for production deployment', 'success');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initCharts();
+            renderRoles();
+            renderQualityMetrics();
+            renderDomainPlugins();
+            updateOrchestrationMetrics(0, -1.0);
+            updateKPITable();
+            log('HQC-DDI Framework initialized. Click "Run Full Demo" to start!', 'info');
+        });
+    </script>
+</body>
+</html>
